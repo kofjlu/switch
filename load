@@ -1,0 +1,13 @@
+#! /bin/sh
+F1=f4
+ST=st
+#ADDR=0x08000000
+ADDR=0x08000000
+case $1 in
+    *.bin )
+    openocd -f /home/pi/emmc/Downloads/openocd/tcl/interface/${ST}link.cfg -f /home/pi/emmc/Downloads/openocd/tcl/target/stm32${F1}x.cfg -c "program ${1:-rtboot_f4.bin} verify reset exit ${ADDR}"
+        ;;
+    * )
+    openocd -f /home/pi/emmc/Downloads/openocd/tcl/interface/${ST}link.cfg -f /home/pi/emmc/Downloads/openocd/tcl/target/stm32${F1}x.cfg -c "program ${1:-rt-thread.elf} verify reset exit"
+esac
+exit 0
