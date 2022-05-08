@@ -32,7 +32,7 @@ static char cBuf[56] = {0x66, 0x66, 0x66, 0x66, 0x01, 0x01, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x77, 0x77, 0x77, 0x77};//另一台设备的协议格式
 static int g_iSame = 0;//点击全部相同前是否选择通道
 static int g_iBlackTim = 0;
-static const PARAM_TypeDef param_db[] = {
+static PARAM_TypeDef param_db[] = {
     {SW1_STATUS, 0x7eff},
     {SW2_STATUS, 0xbeff},
     {SW3_STATUS, 0x7eff},
@@ -67,7 +67,7 @@ static const PARAM_TypeDef param_db[] = {
     {SW32_STATUS, 0xbeff},
 };
 
-static const SW_LCD_MAP_TypeDef sw_lcd_map[] = {
+static SW_LCD_MAP_TypeDef sw_lcd_map[] = {
     {0x7eff, 1},
     {0xbeff, 2},
     {0xdeff, 3},
@@ -236,6 +236,7 @@ static void sw_SetLEDState(ELabelAddr _eLedAddr, ELedState _eLedState)
  */
 static void sw_SendCLKDate()
 {
+    int param_fd = 0;
     int i = 0;
     rt_pin_write(RCLK1, PIN_LOW);
     rt_pin_write(RCLK2, PIN_LOW);
@@ -253,7 +254,7 @@ static void sw_SendCLKDate()
     rt_pin_write(RCLK1, PIN_HIGH);
     rt_pin_write(RCLK2, PIN_HIGH);
     param_fd = open(PARAM_NAME, O_WRONLY);
-    write(param_fd, param_db, strlen(param_db));
+    write(param_fd, param_db, strlen((char*)param_db));
     fsync(param_fd);
     close(param_fd);
 }
@@ -1108,6 +1109,15 @@ void sw_Init(void)
         sw_default_DeviceParam();
         Cfg_SetDevicepara(sw_get_DeviceParam());
     }
+    if (0 != Cfg_Init(PARAM_NAME))//配置文件不存在
+    {
+        int param_fd = 0;
+        param_fd = open(PARAM_NAME, O_WRONLY);
+        write(param_fd, param_db, strlen((char*)param_db));
+        fsync(param_fd);
+        close(param_fd);
+    }
+
     Cfg_GetDevicepara(sw_get_DeviceParam());
 /*         rt_kprintf("%s[%d] %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",__func__,__LINE__ 
         &g_stDevicePara.stNetParam.m_iIPaddr01,
@@ -1294,7 +1304,7 @@ void Get_Lcd_Value_From_Sw(uint16_t sw_value, uint16_t* lcd_value)
  * @param sw_value：switch中对应的值
  * @retval None
  */
-void Get_Lcd_Value_From_Sw(uint16_t lcd_value, uint16_t* sw_value)
+void Get_Sw_Value_From_Lcd(uint16_t lcd_value, uint16_t* sw_value)
 {
     for(uint8_t i = 0; i < (sizeof(sw_lcd_map) / sizeof(SW_LCD_MAP_TypeDef)); i++)
     {
@@ -1337,6 +1347,6 @@ void Write_Param_Db(uint16_t id, uint16_t value)
     Get_Index_From_Id(id, &param_index);
     param_db[param_index].value = value;
     /* Send input value to lcd */
-    Get_Lcd_Value_From_Sw(value, *lcd_value);
+    Get_Lcd_Value_From_Sw(value, &lcd_value);
     sw_ConfigPack(id, lcd_value); // Call interface for sending data to lcd. 
 }

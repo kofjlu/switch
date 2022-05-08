@@ -18,7 +18,7 @@ int Cfg_Init(char *_Filename)
         fd = open(_Filename, O_RDWR | O_APPEND | O_CREAT, 0);
         if (fd < 0)
         {
-            rt_kprintf("creat file failed!\r\n");
+            rt_kprintf("creat file: %s failed!\r\n", _Filename);
             goto END;
         }
     }

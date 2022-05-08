@@ -457,14 +457,14 @@ typedef enum switch_index
 
 typedef struct param_type
 {
-    uint16_t id;
-    uint16_t value;
+    uint16 id;
+    uint16 value;
 }PARAM_TypeDef;
 
 typedef struct sw_2_lcd_map
 {
-    uint16_t value_4_sw;
-    uint16_t value_4_lcd;
+    uint16 value_4_sw;
+    uint16 value_4_lcd;
 }SW_LCD_MAP_TypeDef;
 
 
