@@ -32,52 +32,6 @@ static char cBuf[56] = {0x66, 0x66, 0x66, 0x66, 0x01, 0x01, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x77, 0x77, 0x77, 0x77};//另一台设备的协议格式
 static int g_iSame = 0;//点击全部相同前是否选择通道
 static int g_iBlackTim = 0;
-static PARAM_TypeDef param_db[] = {
-    {SW1_STATUS, 0x7eff},
-    {SW2_STATUS, 0xbeff},
-    {SW3_STATUS, 0x7eff},
-    {SW4_STATUS, 0xbeff},
-    {SW5_STATUS, 0x7eff},
-    {SW6_STATUS, 0xbeff},
-    {SW7_STATUS, 0x7eff},
-    {SW8_STATUS, 0xbeff},
-    {SW9_STATUS, 0x7eff},
-    {SW10_STATUS, 0xbeff},
-    {SW11_STATUS, 0x7eff},
-    {SW12_STATUS, 0xbeff},
-    {SW13_STATUS, 0x7eff},
-    {SW14_STATUS, 0xbeff},
-    {SW15_STATUS, 0x7eff},
-    {SW16_STATUS, 0xbeff},
-    {SW17_STATUS, 0x7eff},
-    {SW18_STATUS, 0xbeff},
-    {SW19_STATUS, 0x7eff},
-    {SW20_STATUS, 0xbeff},
-    {SW21_STATUS, 0x7eff},
-    {SW22_STATUS, 0xbeff},
-    {SW23_STATUS, 0x7eff},
-    {SW24_STATUS, 0xbeff},
-    {SW25_STATUS, 0x7eff},
-    {SW26_STATUS, 0xbeff},
-    {SW27_STATUS, 0x7eff},
-    {SW28_STATUS, 0xbeff},
-    {SW29_STATUS, 0x7eff},
-    {SW30_STATUS, 0xbeff},
-    {SW31_STATUS, 0x7eff},
-    {SW32_STATUS, 0xbeff},
-};
-
-static SW_LCD_MAP_TypeDef sw_lcd_map[] = {
-    {0x7eff, 1},
-    {0xbeff, 2},
-    {0xdeff, 3},
-    {0xeeff, 4},
-    {0xff7e, 5},
-    {0xffbe, 6},
-    {0xffde, 7},
-    {0xffee, 8},
-    {0xffff, 9}
-};
 
 //外部接口无需关心实现
 void rd_usart_ed_send(uint8 *_pcDate, int _iLen);//对外网口发送
@@ -236,7 +190,6 @@ static void sw_SetLEDState(ELabelAddr _eLedAddr, ELedState _eLedState)
  */
 static void sw_SendCLKDate()
 {
-    int param_fd = 0;
     int i = 0;
     rt_pin_write(RCLK1, PIN_LOW);
     rt_pin_write(RCLK2, PIN_LOW);
@@ -253,10 +206,6 @@ static void sw_SendCLKDate()
     }
     rt_pin_write(RCLK1, PIN_HIGH);
     rt_pin_write(RCLK2, PIN_HIGH);
-    param_fd = open(PARAM_NAME, O_WRONLY);
-    write(param_fd, param_db, strlen((char*)param_db));
-    fsync(param_fd);
-    close(param_fd);
 }
 
 /**
@@ -291,7 +240,7 @@ static void sw_default_DeviceParam(void)
     pstDevicePara->stNetParam.m_iIPaddr01 = 192;
     pstDevicePara->stNetParam.m_iIPaddr02 = 168;
     pstDevicePara->stNetParam.m_iIPaddr03 = 0;
-    pstDevicePara->stNetParam.m_iIPaddr04 = 7;
+    pstDevicePara->stNetParam.m_iIPaddr04 = 178;
     pstDevicePara->stNetParam.m_iNetmask01 = 255;
     pstDevicePara->stNetParam.m_iNetmask02 = 255;
     pstDevicePara->stNetParam.m_iNetmask03 = 255;
@@ -303,14 +252,14 @@ static void sw_default_DeviceParam(void)
     pstDevicePara->stNetParam.m_iPCaddr01 = 192;
     pstDevicePara->stNetParam.m_iPCaddr02 = 168;
     pstDevicePara->stNetParam.m_iPCaddr03 = 0;
-    pstDevicePara->stNetParam.m_iPCaddr04 = 1;
-    pstDevicePara->stNetParam.m_iPCport = 61613;
-    pstDevicePara->stNetParam.m_iDeviceport = 20108;
+    pstDevicePara->stNetParam.m_iPCaddr04 = 68;
+    pstDevicePara->stNetParam.m_iPCport = 4001;
+    pstDevicePara->stNetParam.m_iDeviceport = 3502;
     pstDevicePara->stNetParam.m_iMode = MODE_TCPSER;
     pstDevicePara->m_iBitRate = BIT_RATE_9600;
     pstDevicePara->m_iParityCheck = BIT8_ON_CHECK;
     pstDevicePara->m_iSleepTim = 2;
-    pstDevicePara->m_iMode = CTRL_LOCAL;
+    pstDevicePara->m_iMode = CTRL_REMOTE;
     pstDevicePara->m_iDeviceAddr = 255;
     sw_set_DeviceParam(pstDevicePara);
 }
@@ -1109,15 +1058,6 @@ void sw_Init(void)
         sw_default_DeviceParam();
         Cfg_SetDevicepara(sw_get_DeviceParam());
     }
-    if (0 != Cfg_Init(PARAM_NAME))//配置文件不存在
-    {
-        int param_fd = 0;
-        param_fd = open(PARAM_NAME, O_WRONLY);
-        write(param_fd, param_db, strlen((char*)param_db));
-        fsync(param_fd);
-        close(param_fd);
-    }
-
     Cfg_GetDevicepara(sw_get_DeviceParam());
 /*         rt_kprintf("%s[%d] %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",__func__,__LINE__ 
         &g_stDevicePara.stNetParam.m_iIPaddr01,
@@ -1257,96 +1197,5 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED08, ALARM_OFF);
     }
-    rt_thread_mdelay(1000);    
-}
-
-/**
- * @brief  Get_Index_From_Id
- * @note   从参数ID获取到索引
- * @param id：数据id
- * @param index: 在参数数组中的索引
- * @retval None
- */
-void Get_Index_From_Id(uint16_t id, uint8_t* index)
-{
-    for(uint8_t i = 0; i < 32; i++)
-    {
-        if(param_db[i].id == id)
-        {
-            *index = i;
-        }
-    }
-}
-
-/**
- * @brief  Get_Lcd_Value_From_Sw
- * @note   把switch值转换为屏幕上显示的值
- * @param sw_value：switch中对应的值
- * @param lcd_value：LCD中对应的值
- * @retval None
- */
-void Get_Lcd_Value_From_Sw(uint16_t sw_value, uint16_t* lcd_value)
-{
-    for(uint8_t i = 0; i < (sizeof(sw_lcd_map) / sizeof(SW_LCD_MAP_TypeDef)); i++)
-    {
-        if(sw_lcd_map[i].value_4_sw = sw_value)
-        {
-            *lcd_value = sw_lcd_map[i].value_4_lcd;
-            break;
-        }
-    }
-}
-
-/**
- * @brief  Get_Sw_Value_From_Lcd
- * @note   把lcd值转换为switch的值
- * @param lcd_value：LCD中对应的值
- * @param sw_value：switch中对应的值
- * @retval None
- */
-void Get_Sw_Value_From_Lcd(uint16_t lcd_value, uint16_t* sw_value)
-{
-    for(uint8_t i = 0; i < (sizeof(sw_lcd_map) / sizeof(SW_LCD_MAP_TypeDef)); i++)
-    {
-        if(sw_lcd_map[i].value_4_lcd = lcd_value)
-        {
-            *sw_value = sw_lcd_map[i].value_4_sw;
-            break;
-        }
-    }
-}
-
-/**
- * @brief  Read_Param_Db
- * @note   读取参数接口
- * @param id：参数id
- * @param value：存放参数值
- * @retval None
- */
-void Read_Param_Db(uint16_t id, uint16_t* value)
-{
-    uint8_t param_index = 0;
-    Get_Index_From_Id(id, &param_index);
-    *value = param_db[param_index].value;
-}
-
-/**
- * @brief  Write_Param_Db
- * @note   写参数接口，并且将修改后的参数值发送给LCD
- * @param id：参数id
- * @param value: 参数值
- * @retval None
- */
-
-/* 这个接口应该在LCD或网络修改开关状态时调用
-如果LCD调用，可能需要转换数值，接口为：Get_Lcd_Value_From_Sw */
-void Write_Param_Db(uint16_t id, uint16_t value)
-{
-    uint8_t param_index = 0;
-    uint16_t lcd_value = 0;
-    Get_Index_From_Id(id, &param_index);
-    param_db[param_index].value = value;
-    /* Send input value to lcd */
-    Get_Lcd_Value_From_Sw(value, &lcd_value);
-    sw_ConfigPack(id, lcd_value); // Call interface for sending data to lcd. 
+    rt_thread_mdelay(1000);  
 }
