@@ -9,7 +9,6 @@
 #define SEC 100
 
 #define CONFIG_NAME "/spiflash/config.ini"
-#define PARAM_NAME "/spiflash/param.ini"
 #define CMD_SELCT_COLOR 0x1353
 #define FRAME_HEAD 0x5AA5
 
@@ -418,55 +417,6 @@ typedef enum {
     SELECT_INPUT8 = 0b0000000000010001,
     SELECT_CLOSE0 = 0b0000000000000000,
 } EOutPut;
-
-typedef enum switch_index
-{
-    SW1_STATUS  = 0x1010,
-    SW2_STATUS  = 0x1020,
-    SW3_STATUS  = 0x1030,
-    SW4_STATUS  = 0x1040,
-    SW5_STATUS  = 0x1050,
-    SW6_STATUS  = 0x0160,
-    SW7_STATUS  = 0x1070,
-    SW8_STATUS  = 0x1080,
-    SW9_STATUS  = 0x1090,
-    SW10_STATUS = 0x1100,
-    SW11_STATUS = 0x1110,
-    SW12_STATUS = 0x1120,
-    SW13_STATUS = 0x1130,
-    SW14_STATUS = 0x1140,
-    SW15_STATUS = 0x1150,
-    SW16_STATUS = 0x1160,
-    SW17_STATUS = 0x1170,
-    SW18_STATUS = 0x1180,
-    SW19_STATUS = 0x1190,
-    SW20_STATUS = 0x1200,
-    SW21_STATUS = 0x1210,
-    SW22_STATUS = 0x1220,
-    SW23_STATUS = 0x1230,
-    SW24_STATUS = 0x1240,
-    SW25_STATUS = 0x1250,
-    SW26_STATUS = 0x1260,
-    SW27_STATUS = 0x1270,
-    SW28_STATUS = 0x1280,
-    SW29_STATUS = 0x1290,
-    SW30_STATUS = 0x1300,
-    SW31_STATUS = 0x1310,
-    SW32_STATUS = 0x1320,
-}SWITCH_INDEX;
-
-typedef struct param_type
-{
-    uint16 id;
-    uint16 value;
-}PARAM_TypeDef;
-
-typedef struct sw_2_lcd_map
-{
-    uint16 value_4_sw;
-    uint16 value_4_lcd;
-}SW_LCD_MAP_TypeDef;
-
 
 //对外接口
 void sw_NetWorkProc(uint8 *_pcDate);
