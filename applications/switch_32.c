@@ -689,10 +689,10 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
                                               MAIN_BUTTON_21, MAIN_BUTTON_22, MAIN_BUTTON_23, MAIN_BUTTON_24,
                                               MAIN_BUTTON_25, MAIN_BUTTON_26, MAIN_BUTTON_27, MAIN_BUTTON_28,
                                               MAIN_BUTTON_29, MAIN_BUTTON_30, MAIN_BUTTON_31, MAIN_BUTTON_32};
-    const uint16 Main2In[2][SUB_LIST_MAX] = {{SUB_INPUT_1, SUB_INPUT_2, SUB_INPUT_3, SUB_INPUT_4,
-                                              SUB_INPUT_5, SUB_INPUT_6, SUB_INPUT_7, SUB_INPUT_8, SUB_CLOSE},
-                                             {SELECT_INPUT1, SELECT_INPUT2, SELECT_INPUT3, SELECT_INPUT4,
-                                              SELECT_INPUT5, SELECT_INPUT6, SELECT_INPUT7, SELECT_INPUT8, SELECT_CLOSE0}};
+    const uint16 Main2In[2][SUB_LIST_MAX] = {{SUB_CLOSE, SUB_INPUT_1, SUB_INPUT_2, SUB_INPUT_3, SUB_INPUT_4,
+                                              SUB_INPUT_5, SUB_INPUT_6, SUB_INPUT_7, SUB_INPUT_8},
+                                             {SELECT_CLOSE0, SELECT_INPUT1, SELECT_INPUT2, SELECT_INPUT3, SELECT_INPUT4,
+                                              SELECT_INPUT5, SELECT_INPUT6, SELECT_INPUT7, SELECT_INPUT8}};
 
     const uint16 Oneby1[MAIN_BUTTON_MAX] = {15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16};
 
@@ -747,7 +747,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
                 if (stLcd2mcu.ucValue == Main2In[0][i])
                 {
                     g_CLKDate[iIndex] = Main2In[1][i];
-                    stMcu2lcd.stDateEx.stIcon.usicon = i+1;
+                    stMcu2lcd.stDateEx.stIcon.usicon = i;
                 }
             }
             iInputChn = stLcd2mcu.ucValue - 0x100;
@@ -790,7 +790,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
                     stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.Icon = iInputChn;
                     stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.head = 0;
                     //rt_kprintf("iInputChn = %d\t", iInputChn);
-                    g_CLKDate[i] = Main2In[1][iInputChn - 1];
+                    g_CLKDate[i] = Main2In[1][iInputChn];
                     //rt_kprintf("g_CLKDate[%d] = %d\n", i, g_CLKDate[i]);
                     sw_McuSendMsg2Lcd(&(stmcu2lcdEx[i].m_stMcu2Lcd));
                 }
@@ -898,10 +898,10 @@ void sw_NetWorkProc(uint8 *_pcDate)
     _pcDate[10],
     _pcDate[11]); */
     const uint16 Oneby1[MAIN_BUTTON_MAX] = {15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16};
-    const uint16 Main2In[2][SUB_LIST_MAX] = {{SUB_INPUT_1, SUB_INPUT_2, SUB_INPUT_3, SUB_INPUT_4,
-                                              SUB_INPUT_5, SUB_INPUT_6, SUB_INPUT_7, SUB_INPUT_8, SUB_CLOSE},
-                                             {SELECT_INPUT1, SELECT_INPUT2, SELECT_INPUT3, SELECT_INPUT4,
-                                              SELECT_INPUT5, SELECT_INPUT6, SELECT_INPUT7, SELECT_INPUT8, SELECT_CLOSE0}};
+    const uint16 Main2In[2][SUB_LIST_MAX] = {{SUB_CLOSE, SUB_INPUT_1, SUB_INPUT_2, SUB_INPUT_3, SUB_INPUT_4,
+                                              SUB_INPUT_5, SUB_INPUT_6, SUB_INPUT_7, SUB_INPUT_8},
+                                             {SELECT_CLOSE0, SELECT_INPUT1, SELECT_INPUT2, SELECT_INPUT3, SELECT_INPUT4,
+                                              SELECT_INPUT5, SELECT_INPUT6, SELECT_INPUT7, SELECT_INPUT8}};
     char section[512] = {0};
     int iOutputChn = 0;
     int iInputChn[32] = {0};
@@ -948,8 +948,21 @@ void sw_NetWorkProc(uint8 *_pcDate)
         sscanf(_pcDate, cDformat, &iOutputChn, &iInputChn[0]);
         rt_strcpy(section, _pcDate);
         p = rt_strstr(section, "\r");
-        *p = '\n';
+        if(!p)
+        {
+            rt_kprintf("No enter line in input command. \r\n");
+            return;
+        }
+        else
+        {
+            *p = '\n';
+        }
+        section[0] = '>';
         rd_usart_ed_send(section, rt_strlen(section));
+        if((iInputChn[0] < 0) || (iInputChn[0] > 8))
+        {
+            return;
+        }
         cBuf[40] = (char)iOutputChn;
         cBuf[48] = (char)iInputChn[0];
         //rt_kprintf("CMD:[%s]", _pcDate);
@@ -958,7 +971,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
         sw_McuSendMsg2Lcd(&stMcu2lcd);
         //rt_kprintf("[%d]out = %d, in = %d\r\n", __LINE__, cBuf[40], cBuf[48]);
         rd_usart_os_send(cBuf, sizeof(cBuf));
-        g_CLKDate[Oneby1[iOutputChn - 1]] = Main2In[1][iInputChn[0] - 1];
+        g_CLKDate[Oneby1[iOutputChn - 1]] = Main2In[1][iInputChn[0]];
         sw_SendCLKDate();
         sw_SetBeepblink();
     }
@@ -982,6 +995,11 @@ void sw_NetWorkProc(uint8 *_pcDate)
         //rt_kprintf("CMD:[%s]", _pcDate);
         for (i = 0; i < 32; i++)
         {
+            rt_kprintf("output channel %d select %d \r\n", i, iInputChn[i]);
+            if((iInputChn[i] < 0) || (iInputChn[i] > 8))
+            {
+                break;
+            }
             cBuf[40] = i + 1;
             cBuf[48] = (char)iInputChn[i];
             stMcu2lcd.stAddr.Addr = MainButtonList[1][i] - 0x100;
@@ -990,7 +1008,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             //rt_kprintf("[%d]out = %d, in = %d\r\n", __LINE__, cBuf[40], cBuf[48]);
             rd_usart_os_send(cBuf, sizeof(cBuf));
             //rt_thread_mdelay(1000);
-            g_CLKDate[Oneby1[i]] = Main2In[1][iInputChn[i] - 1];
+            g_CLKDate[Oneby1[i]] = Main2In[1][iInputChn[i]];
         }
         sw_SendCLKDate();
         sw_SetBeepblink();
