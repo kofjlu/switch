@@ -5,6 +5,8 @@
 #include <dfs_posix.h>
 #include "config.h"
 
+#define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
+
 const uint16 MainButtonList[2][MAIN_BUTTON_MAX] = {{ONEBY1_BUTTON01, ONEBY1_BUTTON02, ONEBY1_BUTTON03, ONEBY1_BUTTON04, 
                                                     ONEBY1_BUTTON05, ONEBY1_BUTTON06, ONEBY1_BUTTON07, ONEBY1_BUTTON08,
                                                     ONEBY1_BUTTON09, ONEBY1_BUTTON10, ONEBY1_BUTTON11, ONEBY1_BUTTON12,
@@ -989,7 +991,9 @@ void sw_NetWorkProc(uint8 *_pcDate)
             sw_McuSendMsg2Lcd(&stMcu2lcd);
             //rt_kprintf("[%d]out = %d, in = %d\r\n", __LINE__, cBuf[40], cBuf[48]);
             rd_usart_os_send(cBuf, sizeof(cBuf));
-            //rt_thread_mdelay(1000);
+#ifdef FOUR_VERSION
+            rt_thread_mdelay(1000);
+#endif
             g_CLKDate[Oneby1[i]] = Main2In[1][iInputChn[i] - 1];
         }
         sw_SendCLKDate();
@@ -1094,6 +1098,16 @@ void sw_Init(void)
     rt_thread_mdelay(SEC);
     g_MAC_flag = 0;
     sw_SetNetpara2module(sw_get_DeviceParam());
+#ifdef FOUR_VERSION
+    rt_pin_mode(GPIO9, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO10, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO11, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO12, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO13, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO14, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO15, PIN_MODE_INPUT_PULLDOWN);
+    rt_pin_mode(GPIO16, PIN_MODE_INPUT_PULLDOWN);
+#else
     rt_pin_mode(GPIO9, PIN_MODE_INPUT_PULLUP);
     rt_pin_mode(GPIO10, PIN_MODE_INPUT_PULLUP);
     rt_pin_mode(GPIO11, PIN_MODE_INPUT_PULLUP);
@@ -1102,6 +1116,7 @@ void sw_Init(void)
     rt_pin_mode(GPIO14, PIN_MODE_INPUT_PULLUP);
     rt_pin_mode(GPIO15, PIN_MODE_INPUT_PULLUP);
     rt_pin_mode(GPIO16, PIN_MODE_INPUT_PULLUP);
+#endif
     rt_pin_mode(IN1, PIN_MODE_OUTPUT);
     rt_pin_mode(CLK1, PIN_MODE_OUTPUT);
     rt_pin_mode(RCLK1, PIN_MODE_OUTPUT);
@@ -1125,6 +1140,10 @@ void sw_Init(void)
  */
 void sw_Proc(void)
 {
+    int state = 0;
+#ifdef FOUR_VERSION
+    state = 1;
+#endif
     char black[10] = {0x5a, 0xa5, 0x07, 0x82, 0x00, 0x84, 0x5a, 0x01, 0x00, 0x5f};
     g_iBlackTim += 1;
     //rt_kprintf("g_iBlackTim = %d\r\n", g_iBlackTim);
@@ -1133,7 +1152,7 @@ void sw_Proc(void)
         g_iBlackTim = 0;
         rd_usart_sz_send(black, sizeof(black));
     }
-    if (0 == rt_pin_read(GPIO9))
+    if (state == rt_pin_read(GPIO9))
     {
         sw_SetLEDState(ALARM_LED01, ALARM_ON);
     }
@@ -1141,7 +1160,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED01, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO10))
+    if (state == rt_pin_read(GPIO10))
     {
         sw_SetLEDState(ALARM_LED02, ALARM_ON);
     }
@@ -1149,7 +1168,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED02, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO11))
+    if (state == rt_pin_read(GPIO11))
     {
         sw_SetLEDState(ALARM_LED03, ALARM_ON);
     }
@@ -1157,7 +1176,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED03, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO12))
+    if (state == rt_pin_read(GPIO12))
     {
         sw_SetLEDState(ALARM_LED04, ALARM_ON);
     }
@@ -1165,7 +1184,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED04, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO13))
+    if (state == rt_pin_read(GPIO13))
     {
         sw_SetLEDState(ALARM_LED05, ALARM_ON);
     }
@@ -1173,7 +1192,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED05, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO14))
+    if (state == rt_pin_read(GPIO14))
     {
         sw_SetLEDState(ALARM_LED06, ALARM_ON);
     }
@@ -1181,7 +1200,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED06, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO15))
+    if (state == rt_pin_read(GPIO15))
     {
         sw_SetLEDState(ALARM_LED07, ALARM_ON);
     }
@@ -1189,7 +1208,7 @@ void sw_Proc(void)
     {
         sw_SetLEDState(ALARM_LED07, ALARM_OFF);
     }
-    if (0 == rt_pin_read(GPIO16))
+    if (state == rt_pin_read(GPIO16))
     {
         sw_SetLEDState(ALARM_LED08, ALARM_ON);
     }
