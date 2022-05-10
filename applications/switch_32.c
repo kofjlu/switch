@@ -930,7 +930,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
     (void)sprintf(cStatus, GET_STATUS_REQ, iDevAddr);
     (void)sprintf(cDformat, "<%d%s", iDevAddr, SIGNLE_CHN_FORMAT);
     (void)sprintf(cMformat, "<%d%s", iDevAddr, MLIU_CHN_FORMAT);
-    //rt_kprintf("========\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", cModeonReq, cModeoffReq, cModeonRsp, cModeoffRsp, cSChnHead, cMChnHead, cRemoteMode, cStatus);
+    // rt_kprintf("========\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", cModeonReq, cModeoffReq, cModeonRsp, cModeoffRsp, cSChnHead, cMChnHead, cRemoteMode, cStatus);
     //rt_kprintf("%s[%d]%s\r\n", __func__, __LINE__, _pcDate);
     if (0 == rt_strcmp(_pcDate, cModeonReq))
     {
@@ -950,19 +950,11 @@ void sw_NetWorkProc(uint8 *_pcDate)
         sscanf(_pcDate, cDformat, &iOutputChn, &iInputChn[0]);
         rt_strcpy(section, _pcDate);
         p = rt_strstr(section, "\r");
-        if(!p)
-        {
-            rt_kprintf("No enter line in input command. \r\n");
-            return;
-        }
-        else
-        {
-            *p = '\n';
-        }
+        *p = '\n';
         section[0] = '>';
         rd_usart_ed_send(section, rt_strlen(section));
-        if((iInputChn[0] < 0) || (iInputChn[0] > 8))
-        {
+        if((iInputChn[0] < 0) || (iInputChn[0] > 8) || (iOutputChn < 1) || (iOutputChn > 32))
+        {//data value invalid. 
             return;
         }
         cBuf[40] = (char)iOutputChn;
@@ -970,6 +962,8 @@ void sw_NetWorkProc(uint8 *_pcDate)
         //rt_kprintf("CMD:[%s]", _pcDate);
         stMcu2lcd.stAddr.Addr = MainButtonList[1][iOutputChn - 1] - 0x100;
         stMcu2lcd.stDateEx.stIcon.Icon = iInputChn[0];
+        // rt_kprintf("===Data to Lcd: %x, %x, %x, %x, %x, %x", stMcu2lcd.usHead, stMcu2lcd.ucSize, stMcu2lcd.ucCmd, 
+        // stMcu2lcd.stAddr.usaddr, stMcu2lcd.stDateEx.stvaluex, stMcu2lcd.stDateEx.stvalue);
         sw_McuSendMsg2Lcd(&stMcu2lcd);
         //rt_kprintf("[%d]out = %d, in = %d\r\n", __LINE__, cBuf[40], cBuf[48]);
         rd_usart_os_send(cBuf, sizeof(cBuf));
@@ -979,9 +973,6 @@ void sw_NetWorkProc(uint8 *_pcDate)
     }
     else if ((p = rt_strstr(_pcDate, cMChnHead)) && (p != RT_NULL))
     {
-        stMcu2lcd.usHead = FRAME_HEAD;
-        stMcu2lcd.ucSize = 0x05;
-        stMcu2lcd.ucCmd = CMD_WRITE;
         sscanf(_pcDate, cMformat, &iInputChn[0], &iInputChn[1], &iInputChn[2], &iInputChn[3],
                                          &iInputChn[4], &iInputChn[5], &iInputChn[6], &iInputChn[7],
                                          &iInputChn[8], &iInputChn[9], &iInputChn[10], &iInputChn[11],
@@ -993,11 +984,15 @@ void sw_NetWorkProc(uint8 *_pcDate)
         rt_strcpy(section, _pcDate);
         p = rt_strstr(section, "\r");
         *p = '\n';
+        section[0] = '>';
         rd_usart_ed_send(section, rt_strlen(section));        
         //rt_kprintf("CMD:[%s]", _pcDate);
         for (i = 0; i < 32; i++)
         {
-            rt_kprintf("output channel %d select %d \r\n", i, iInputChn[i]);
+            stMcu2lcd.usHead = FRAME_HEAD;
+            stMcu2lcd.ucSize = 0x05;
+            stMcu2lcd.ucCmd = CMD_WRITE;
+            // rt_kprintf("output channel %d select %d \r\n", i, iInputChn[i]);
             if((iInputChn[i] < 0) || (iInputChn[i] > 8))
             {
                 break;
@@ -1006,7 +1001,10 @@ void sw_NetWorkProc(uint8 *_pcDate)
             cBuf[48] = (char)iInputChn[i];
             stMcu2lcd.stAddr.Addr = MainButtonList[1][i] - 0x100;
             stMcu2lcd.stDateEx.stIcon.Icon = iInputChn[i];
+            // rt_kprintf("===Data to Lcd: %x, %x, %x, %x, %x, %x\n", stMcu2lcd.usHead, stMcu2lcd.ucSize, stMcu2lcd.ucCmd, 
+            // stMcu2lcd.stAddr.usaddr, stMcu2lcd.stDateEx.stvaluex, stMcu2lcd.stDateEx.stvalue);
             sw_McuSendMsg2Lcd(&stMcu2lcd);
+            stMcu2lcd.stAddr.tail = 0;
             //rt_kprintf("[%d]out = %d, in = %d\r\n", __LINE__, cBuf[40], cBuf[48]);
             rd_usart_os_send(cBuf, sizeof(cBuf));
 #ifdef FOUR_VERSION
