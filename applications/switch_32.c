@@ -533,6 +533,19 @@ static EEventType sw_GetEventType(uint16 _uiCmd)
 static void sw_ConfigItemProc(uint16 _iAddr, uint16 _iValue)
 {
     TDeviceParam *pstDeviceParam = sw_get_DeviceParam();
+    if(g_stDevicePara.m_iMode == CTRL_LOCAL)
+    {
+    }
+    else
+    {
+        if(_iAddr == EDIT_CTRL)
+        {
+        }
+        else
+        {
+            return;
+        }
+    }
     switch (_iAddr)
     {
     case EDIT_LOCAL_IP01:
@@ -728,7 +741,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
         EEventType eEvevtType = sw_GetEventType(stLcd2mcu.stAddr.Addr);
         stMcu2lcd.ucSize = 0x05;
         //rt_kprintf("%s[%d]eEvevtType = %d\r\n", __func__, __LINE__, eEvevtType);
-        if (CMD_MAIN_BUTTON == eEvevtType)//按下主    ONEBY1_BUTTON01 = 0x400,
+        if ((CMD_MAIN_BUTTON == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))//按下主    ONEBY1_BUTTON01 = 0x400,
         {
             //rt_kprintf("Golbal:%d\n", stLcd2mcu.stAddr.Addr);
             for (i = 0; i < MAIN_BUTTON_MAX; i++)
@@ -741,7 +754,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             iOutputChn = stLcd2mcu.stAddr.Addr - 0x100;
             // rt_kprintf("%s[%d]%s[%d]iOutputChn = %o\r\n", __func__, __LINE__, iOutputChn);
         }
-        else if (CMD_SUB_BUTTON == eEvevtType)//副菜单点输入按钮
+        else if ((CMD_SUB_BUTTON == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))//副菜单点输入按钮
         {   
             //rt_kpCMD_SET_PORTrintf("Golbal:%d\n", stLcd2mcu.ucValue);
             for (i = 0; i < SUB_LIST_MAX; i++)
@@ -759,7 +772,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             sw_McuSendMsg2Lcd(&stMcu2lcd);
             g_iSame = 1;
         }
-        else if (CMD_SUB_SAVE == eEvevtType)//副菜单点击返回（保存）
+        else if ((CMD_SUB_SAVE == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))//副菜单点击返回（保存）
         {
             if (stLcd2mcu.ucValue == 0x0112)
             {
@@ -778,7 +791,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             stMcu2lcd.stDateEx.stIcon.usicon = 11;
             sw_McuSendMsg2Lcd(&stMcu2lcd);
         }
-        else if (CMD_SUB_ALL == eEvevtType)//副菜单点击全部相同
+        else if ((CMD_SUB_ALL == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))//副菜单点击全部相同
         {
             if (g_iSame != 0)
             {
@@ -804,7 +817,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             stMcu2lcd.stDateEx.stIcon.usicon = 11;
             sw_McuSendMsg2Lcd(&stMcu2lcd);
         }
-        else if (CMD_ONEBY1 == eEvevtType)//一对一界面点击按钮
+        else if ((CMD_ONEBY1 == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))//一对一界面点击按钮
         {
             for (i = 0; i < MAIN_BUTTON_MAX; i++)
             {
@@ -828,7 +841,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             sw_McuSendMsg2Lcd(&stMcu2lcd);
             sw_SendCLKDate();
         }
-        else if (CMD_CONFIG_DEFAULT == eEvevtType)
+        else if ((CMD_CONFIG_DEFAULT == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))
         {
             if(stLcd2mcu.ucValue == 1)
             {
@@ -837,7 +850,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
                 sw_UpdateDevicePara();
             }
         }
-        else if (CMD_CONFIG_OK == eEvevtType)
+        else if ((CMD_CONFIG_OK == eEvevtType)  && (g_stDevicePara.m_iMode == CTRL_LOCAL))
         {
             TDeviceParam *pstDeviceParam = sw_get_DeviceParam();
             Cfg_SetDevicepara(pstDeviceParam);
@@ -871,6 +884,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             sw_UpdateDevicePara();
         }
     }
+    rt_kprintf("Remote status: %d\r\n", g_stDevicePara.m_iMode);
 END:
     return;
 }
@@ -934,11 +948,27 @@ void sw_NetWorkProc(uint8 *_pcDate)
     //rt_kprintf("%s[%d]%s\r\n", __func__, __LINE__, _pcDate);
     if (0 == rt_strcmp(_pcDate, cModeonReq))
     {
+        stMcu2lcd.usHead = FRAME_HEAD;
+        stMcu2lcd.ucSize = 0x05;
+        stMcu2lcd.ucCmd = CMD_WRITE;
+        stMcu2lcd.stAddr.Addr = EDIT_CTRL;
+        stMcu2lcd.stDateEx.stIcon.Icon = CTRL_REMOTE;
+        g_stDevicePara.m_iMode = CTRL_REMOTE;
+        sw_McuSendMsg2Lcd(&stMcu2lcd);
+        sw_UpdateDevicePara();
         rd_usart_ed_send(cModeonRsp, sizeof(cModeonRsp));
         sw_SetBeepblink();
     }
     else if (0 == rt_strcmp(_pcDate, cModeoffReq))
     {
+        stMcu2lcd.usHead = FRAME_HEAD;
+        stMcu2lcd.ucSize = 0x05;
+        stMcu2lcd.ucCmd = CMD_WRITE;
+        stMcu2lcd.stAddr.Addr = EDIT_CTRL;
+        stMcu2lcd.stDateEx.stIcon.Icon = CTRL_LOCAL;
+        g_stDevicePara.m_iMode = CTRL_LOCAL;
+        sw_McuSendMsg2Lcd(&stMcu2lcd);
+        sw_UpdateDevicePara();
         rd_usart_ed_send(cModeoffRsp, sizeof(cModeoffRsp));
         sw_SetBeepblink();
     }
