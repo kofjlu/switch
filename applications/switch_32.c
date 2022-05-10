@@ -5,7 +5,7 @@
 #include <dfs_posix.h>
 #include "config.h"
 
-#define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
+//#define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
 
 const uint16 MainButtonList[2][MAIN_BUTTON_MAX] = {{ONEBY1_BUTTON01, ONEBY1_BUTTON02, ONEBY1_BUTTON03, ONEBY1_BUTTON04, 
                                                     ONEBY1_BUTTON05, ONEBY1_BUTTON06, ONEBY1_BUTTON07, ONEBY1_BUTTON08,
@@ -1047,15 +1047,23 @@ void sw_NetWorkProc(uint8 *_pcDate)
     }
     else if ((p = rt_strstr(_pcDate, cRemoteMode)) && (p != RT_NULL))
     {
+        rt_strcpy(section, _pcDate);
+        section[0] = '>';
+        uint8 len = rt_strlen(section);
         if (CTRL_REMOTE == g_stDevicePara.m_iMode)
         {
-            snprintf(section, rt_strlen(section), "%s", CTRL_MODEON_RSP);
+            section[len - 2] = 'O';
+            section[len - 1] = 'N';
+            section[len] = '\n';
         }
         else
         {
-            snprintf(section, rt_strlen(section), "%s", CTRL_MODEOFF_RSP);
+            section[len - 2] = 'O';
+            section[len - 1] = 'F';
+            section[len] = 'F';
+            section[len + 1] = '\n';
         }
-        rt_kprintf("%s", section);
+        rt_kprintf("====Remote status: %s", section);
         rd_usart_ed_send(section, rt_strlen(section));
         sw_SetBeepblink();
     }

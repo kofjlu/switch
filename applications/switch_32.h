@@ -35,7 +35,7 @@
 #define SIGNLE_CHN_FORMAT "/D%02d_%02d\r"
 #define MLIU_CHN_HEAD_REQ "<%d/M"
 #define MLIU_CHN_FORMAT "/M%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d\r"
-#define GET_REMOTE_MODE_REQ "<%d/M_?\r"
+#define GET_REMOTE_MODE_REQ "<%d/REM_?\r"
 #define GET_STATUS_REQ "<%d/STATUS_?\r"
 
 #define CTRL_MODEON_RSP ">%d/REM_ON\n" 
