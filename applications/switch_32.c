@@ -830,7 +830,7 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
                 stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.usicon = (i%(SUB_LIST_MAX - 1) + 1);
 /*                 if (1 == stLcd2mcu.ucValue)
                 { */
-                g_CLKDate[Oneby1[i]] = Main2In[1][i%(SUB_LIST_MAX - 1)];
+                g_CLKDate[Oneby1[i]] = Main2In[1][i%(SUB_LIST_MAX - 1) + 1];
                 //rt_kprintf("g_CLKDate[%d] = %d\n", Main2Out[i], g_CLKDate[i]);
 /*                 } */
                 sw_McuSendMsg2Lcd(&(stmcu2lcdEx[i].m_stMcu2Lcd));
@@ -1047,23 +1047,14 @@ void sw_NetWorkProc(uint8 *_pcDate)
     }
     else if ((p = rt_strstr(_pcDate, cRemoteMode)) && (p != RT_NULL))
     {
-        rt_strcpy(section, _pcDate);
-        section[0] = '>';
-        uint8 len = rt_strlen(section);
         if (CTRL_REMOTE == g_stDevicePara.m_iMode)
         {
-            section[len - 2] = 'O';
-            section[len - 1] = 'N';
-            section[len] = '\n';
+            sprintf(section, CTRL_MODEON_RSP, iDevAddr);
         }
         else
         {
-            section[len - 2] = 'O';
-            section[len - 1] = 'F';
-            section[len] = 'F';
-            section[len + 1] = '\n';
+            sprintf(section, CTRL_MODEOFF_RSP, iDevAddr);
         }
-        rt_kprintf("====Remote status: %s", section);
         rd_usart_ed_send(section, rt_strlen(section));
         sw_SetBeepblink();
     }
@@ -1080,11 +1071,24 @@ void sw_NetWorkProc(uint8 *_pcDate)
                 }
             }
         }
-        snprintf(section, rt_strlen(section), ">%d/STATUS_ON,CH1_%d,CH2_%d,CH3_%d,CH4_%d,CH5_%d,CH6_%d,CH7_%d,CH8_%d,CH9_%d,CH10_%d,CH11_%d,CH12_%d,CH13_%d,CH14_%d,CH15_%d,CH16_%d,CH17_%d,CH18_%d,CH19_%d,CH20_%d,CH21_%d,CH22_%d,CH23_%d,CH24_%d,CH25_%d,CH26_%d,CH27_%d,CH28_%d,CH29_%d,CH30_%d,CH31_%d,CH32_%d\n", 
-                                                       iDevAddr, iInputChn[0], iInputChn[1], iInputChn[2], iInputChn[3], iInputChn[4], iInputChn[5], iInputChn[6], iInputChn[7],
-                                                                 iInputChn[8], iInputChn[9], iInputChn[10], iInputChn[11], iInputChn[12], iInputChn[13], iInputChn[14], iInputChn[15], 
-                                                                 iInputChn[16], iInputChn[17], iInputChn[18], iInputChn[19], iInputChn[20], iInputChn[21], iInputChn[22], iInputChn[23], 
-                                                                 iInputChn[24], iInputChn[25], iInputChn[26], iInputChn[27], iInputChn[28], iInputChn[29], iInputChn[30], iInputChn[31]);
+        if (CTRL_REMOTE == g_stDevicePara.m_iMode)
+        {
+            sprintf(section, OUTPUT_STATUS_ON_RSP, 
+                    iDevAddr, iInputChn[0], iInputChn[1], iInputChn[2], iInputChn[3], iInputChn[4], iInputChn[5], iInputChn[6], iInputChn[7],
+                                iInputChn[8], iInputChn[9], iInputChn[10], iInputChn[11], iInputChn[12], iInputChn[13], iInputChn[14], iInputChn[15], 
+                                iInputChn[16], iInputChn[17], iInputChn[18], iInputChn[19], iInputChn[20], iInputChn[21], iInputChn[22], iInputChn[23], 
+                                iInputChn[24], iInputChn[25], iInputChn[26], iInputChn[27], iInputChn[28], iInputChn[29], iInputChn[30], iInputChn[31]);
+        }
+        else
+        {
+            sprintf(section, OUTPUT_STATUS_OFF_RSP, 
+                    iDevAddr, iInputChn[0], iInputChn[1], iInputChn[2], iInputChn[3], iInputChn[4], iInputChn[5], iInputChn[6], iInputChn[7],
+                                iInputChn[8], iInputChn[9], iInputChn[10], iInputChn[11], iInputChn[12], iInputChn[13], iInputChn[14], iInputChn[15], 
+                                iInputChn[16], iInputChn[17], iInputChn[18], iInputChn[19], iInputChn[20], iInputChn[21], iInputChn[22], iInputChn[23], 
+                                iInputChn[24], iInputChn[25], iInputChn[26], iInputChn[27], iInputChn[28], iInputChn[29], iInputChn[30], iInputChn[31]);
+        }
+
+        rt_kprintf("====rsp len is: %d\n", rt_strlen(section));
         rd_usart_ed_send(section, rt_strlen(section));
         sw_SetBeepblink();
     }

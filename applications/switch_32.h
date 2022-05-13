@@ -43,6 +43,8 @@
 #define SIGNLE_CHN_HEAD_RSP ">%d/D"
 #define MLIU_CHN_HEAD_RSP ">%d/M"
 #define GET_STATUS_HEAD_RSP ">%d/STATUS_ON"
+#define OUTPUT_STATUS_ON_RSP ">%d/STATUS_ON,CH1_%d,CH2_%d,CH3_%d,CH4_%d,CH5_%d,CH6_%d,CH7_%d,CH8_%d,CH9_%d,CH10_%d,CH11_%d,CH12_%d,CH13_%d,CH14_%d,CH15_%d,CH16_%d,CH17_%d,CH18_%d,CH19_%d,CH20_%d,CH21_%d,CH22_%d,CH23_%d,CH24_%d,CH25_%d,CH26_%d,CH27_%d,CH28_%d,CH29_%d,CH30_%d,CH31_%d,CH32_%d\n"
+#define OUTPUT_STATUS_OFF_RSP ">%d/STATUS_OFF,CH1_%d,CH2_%d,CH3_%d,CH4_%d,CH5_%d,CH6_%d,CH7_%d,CH8_%d,CH9_%d,CH10_%d,CH11_%d,CH12_%d,CH13_%d,CH14_%d,CH15_%d,CH16_%d,CH17_%d,CH18_%d,CH19_%d,CH20_%d,CH21_%d,CH22_%d,CH23_%d,CH24_%d,CH25_%d,CH26_%d,CH27_%d,CH28_%d,CH29_%d,CH30_%d,CH31_%d,CH32_%d\n"
 
 typedef union { 
     uint16 usaddr;
@@ -140,7 +142,8 @@ typedef enum {
 } ELedState;
 
 typedef enum {
-    SUB_INPUT_1 = 0x0101, //按01，下同
+    SUB_CLOSE = 0x0100, //按关闭  
+    SUB_INPUT_1, //按01，下同
     SUB_INPUT_2,
     SUB_INPUT_3,
     SUB_INPUT_4,
@@ -148,7 +151,6 @@ typedef enum {
     SUB_INPUT_6,
     SUB_INPUT_7,
     SUB_INPUT_8,
-    SUB_CLOSE, //按关闭  
 } ESubButton;
 
 typedef enum {
