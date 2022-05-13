@@ -37,6 +37,8 @@
 #define MLIU_CHN_FORMAT "/M%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d%02d\r"
 #define GET_REMOTE_MODE_REQ "<%d/REM_?\r"
 #define GET_STATUS_REQ "<%d/STATUS_?\r"
+#define SET_MANUFACTURE_INFO "<%d/WHAT="
+#define GET_MANUFACTURE_INFO "<%d/WHAT_?"
 
 #define CTRL_MODEON_RSP ">%d/REM_ON\n" 
 #define CTRL_MODEOFF_RSP ">%d/REM_OFF\n" 
@@ -45,6 +47,8 @@
 #define GET_STATUS_HEAD_RSP ">%d/STATUS_ON"
 #define OUTPUT_STATUS_ON_RSP ">%d/STATUS_ON,CH1_%d,CH2_%d,CH3_%d,CH4_%d,CH5_%d,CH6_%d,CH7_%d,CH8_%d,CH9_%d,CH10_%d,CH11_%d,CH12_%d,CH13_%d,CH14_%d,CH15_%d,CH16_%d,CH17_%d,CH18_%d,CH19_%d,CH20_%d,CH21_%d,CH22_%d,CH23_%d,CH24_%d,CH25_%d,CH26_%d,CH27_%d,CH28_%d,CH29_%d,CH30_%d,CH31_%d,CH32_%d\n"
 #define OUTPUT_STATUS_OFF_RSP ">%d/STATUS_OFF,CH1_%d,CH2_%d,CH3_%d,CH4_%d,CH5_%d,CH6_%d,CH7_%d,CH8_%d,CH9_%d,CH10_%d,CH11_%d,CH12_%d,CH13_%d,CH14_%d,CH15_%d,CH16_%d,CH17_%d,CH18_%d,CH19_%d,CH20_%d,CH21_%d,CH22_%d,CH23_%d,CH24_%d,CH25_%d,CH26_%d,CH27_%d,CH28_%d,CH29_%d,CH30_%d,CH31_%d,CH32_%d\n"
+#define SET_MANUFACTURE_RSP ">%d/WHAT=%s\n"
+#define GET_MANUFACTURE_RSP ">%d/WHAT=%s\n"
 
 typedef union { 
     uint16 usaddr;
@@ -68,15 +72,15 @@ typedef union {
 }TMAC;
 
 typedef union { 
-    uint8 MacAddr[6];//存放MAC地址
+    uint8 MacAddr[20];//存放MAC地址
     struct {
         TIcon stIcon;//图标对应值，详见EIcon
-        uint8 ucNull[4];//预留
+        uint8 ucNull[18];//预留
     }__attribute__((packed));
     struct {
         uint16 stvalue;
         uint16 stvaluex;
-        uint8 Null[2];
+        uint8 Null[16];
     }__attribute__((packed));
 }TExDate;
 
@@ -95,7 +99,7 @@ typedef union {
 } Tlcd2mcu;
 
 typedef union {
-    uint8 ucDate[12];
+    uint8 ucDate[26];
     struct {
         uint16 usHead;//帧头,默认为5AA5
         uint8 ucSize; //数据长度
@@ -405,6 +409,7 @@ typedef struct {
     int m_iDeviceAddr;
     int m_iSleepTim;
     int m_iMode;
+    char Manu[32];
     int m_iNull[3];
 }__attribute__((packed)) TDeviceParam;
 
