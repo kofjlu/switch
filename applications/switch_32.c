@@ -107,7 +107,7 @@ static void sw_McuSendMsg2Lcd(Tmcu2lcd *_stMcu2lcd)
     int i = 0;
     uint8 cBuf[sizeof(Tmcu2lcd)] = {0};
     (void)sw_Big2Little(cBuf, sizeof(Tmcu2lcd), _stMcu2lcd, sizeof(Tmcu2lcd), MCU2LCD);
-/*     rt_kprintf("%s[%d]_stMcu2lcd->ucSize = %d\t", __func__, __LINE__, _stMcu2lcd->ucSize);
+/*     rt_kprintf("%s[%d]_stMcu2lcd->ucSize = %d\t", __func__, __LINE__, _stMcu2lcd->ucSize); 
     for (i = 0; i < sizeof(Tmcu2lcd); i++)
     {
         rt_kprintf("%o\t", cBuf[i]);
@@ -934,6 +934,8 @@ void sw_NetWorkProc(uint8 *_pcDate)
     char cStatus[16] = {0};
     char cDformat[32] = {0};
     char cMformat[256] = {0};
+    char cManufacture[32] = {0};
+    char cManufactureRsp[32] = {0};
     (void)sprintf(cModeonReq, CTRL_MODEON_REQ, iDevAddr);
     (void)sprintf(cModeoffReq, CTRL_MODEOFF_REQ, iDevAddr);
     (void)sprintf(cModeonRsp, CTRL_MODEON_RSP, iDevAddr);
@@ -944,6 +946,9 @@ void sw_NetWorkProc(uint8 *_pcDate)
     (void)sprintf(cStatus, GET_STATUS_REQ, iDevAddr);
     (void)sprintf(cDformat, "<%d%s", iDevAddr, SIGNLE_CHN_FORMAT);
     (void)sprintf(cMformat, "<%d%s", iDevAddr, MLIU_CHN_FORMAT);
+    (void)sprintf(cManufacture, SET_MANUFACTURE_INFO, iDevAddr);
+    (void)sprintf(cManufactureRsp, GET_MANUFACTURE_INFO, iDevAddr);
+    
     // rt_kprintf("========\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", cModeonReq, cModeoffReq, cModeonRsp, cModeoffRsp, cSChnHead, cMChnHead, cRemoteMode, cStatus);
     //rt_kprintf("%s[%d]%s\r\n", __func__, __LINE__, _pcDate);
     if (0 == rt_strcmp(_pcDate, cModeonReq))
@@ -1087,8 +1092,6 @@ void sw_NetWorkProc(uint8 *_pcDate)
                                 iInputChn[16], iInputChn[17], iInputChn[18], iInputChn[19], iInputChn[20], iInputChn[21], iInputChn[22], iInputChn[23], 
                                 iInputChn[24], iInputChn[25], iInputChn[26], iInputChn[27], iInputChn[28], iInputChn[29], iInputChn[30], iInputChn[31]);
         }
-
-        rt_kprintf("====rsp len is: %d\n", rt_strlen(section));
         rd_usart_ed_send(section, rt_strlen(section));
         sw_SetBeepblink();
     }
@@ -1106,6 +1109,33 @@ void sw_NetWorkProc(uint8 *_pcDate)
             &cBuf[14], &cBuf[15], &cBuf[16], &cBuf[17]); */
         rd_usart_sz_send(cBuf, sizeof(cBuf));
     }
+    else if((p = rt_strstr(_pcDate, cManufacture)) && (p != RT_NULL))
+    {
+        uint16 dev_addr = 0;
+        sscanf(_pcDate, "<%d/WHAT=%s", &dev_addr, g_stDevicePara.Manu);
+        stMcu2lcd.usHead = FRAME_HEAD;
+        stMcu2lcd.ucSize = 0x17;
+        stMcu2lcd.ucCmd = CMD_WRITE;
+        stMcu2lcd.stAddr.usaddr = 0x1400;
+        stMcu2lcd.stDateEx.MacAddr[0] = g_stDevicePara.Manu[1];
+        stMcu2lcd.stDateEx.MacAddr[1] = g_stDevicePara.Manu[0];
+        for(uint8 i = 2; i < rt_strlen(g_stDevicePara.Manu); i++)
+        {
+            stMcu2lcd.stDateEx.MacAddr[i] = g_stDevicePara.Manu[i];
+        }
+        sw_McuSendMsg2Lcd(&stMcu2lcd);
+        rt_strcpy(section, _pcDate);
+        section[0] = '>';
+        rd_usart_ed_send(section, rt_strlen(section));
+        sw_SetBeepblink();
+    }
+    else if ((p = rt_strstr(_pcDate, cManufactureRsp)) && (p != RT_NULL))
+    {
+        sprintf(section, GET_MANUFACTURE_RSP, iDevAddr, g_stDevicePara.Manu);
+        rd_usart_ed_send(section, rt_strlen(section));
+        sw_SetBeepblink();
+    }
+    
 }
 
 /**
