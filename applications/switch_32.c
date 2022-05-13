@@ -674,7 +674,7 @@ static void sw_SetNetpara2module(TDeviceParam *_pstDeviceParam)
     }
     else if (_pstDeviceParam->stNetParam.m_iMode == 1)
     {
-        sprintf(cBuf, "AT+SOCK=UDPC,%d.%d.%d.%d,%d\n", 
+        sprintf(cBuf, "AT+SOCK=UDPS,%d.%d.%d.%d,%d\n", 
             _pstDeviceParam->stNetParam.m_iPCaddr01,
             _pstDeviceParam->stNetParam.m_iPCaddr02,
             _pstDeviceParam->stNetParam.m_iPCaddr03,
@@ -884,7 +884,6 @@ void sw_Lcd2McuProc(uint8 *_pcDate)
             sw_UpdateDevicePara();
         }
     }
-    rt_kprintf("Remote status: %d\r\n", g_stDevicePara.m_iMode);
 END:
     return;
 }
