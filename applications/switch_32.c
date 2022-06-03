@@ -1235,10 +1235,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
     
     // rt_kprintf("========\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", cModeonReq, cModeoffReq, cModeonRsp, cModeoffRsp, cSChnHead, cMChnHead, cRemoteMode, cStatus);
     //rt_kprintf("%s[%d]%s\r\n", __func__, __LINE__, _pcDate);
-    if(g_stDevicePara.m_iMode == CTRL_LOCAL)
-    {
-    }
-    else if (0 == rt_strcmp(_pcDate, cModeonReq))
+    if(0 == rt_strcmp(_pcDate, cModeonReq))
     {
         stMcu2lcd.usHead = FRAME_HEAD;
         stMcu2lcd.ucSize = 0x05;
@@ -1251,7 +1248,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
         rd_usart_ed_send(cModeonRsp, sizeof(cModeonRsp));
         sw_SetBeepblink();
     }
-    else if (0 == rt_strcmp(_pcDate, cModeoffReq))
+    else if ((0 == rt_strcmp(_pcDate, cModeoffReq)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         stMcu2lcd.usHead = FRAME_HEAD;
         stMcu2lcd.ucSize = 0x05;
@@ -1264,7 +1261,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
         rd_usart_ed_send(cModeoffRsp, sizeof(cModeoffRsp));
         sw_SetBeepblink();
     }
-    else if ((p = rt_strstr(_pcDate, cSChnHead)) && (p != RT_NULL))
+    else if (((p = rt_strstr(_pcDate, cSChnHead)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 9)
         {
@@ -1309,7 +1306,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));              
         }   
     }
-    else if ((p = rt_strstr(_pcDate, cMChnHead)) && (p != RT_NULL))
+    else if (((p = rt_strstr(_pcDate, cMChnHead)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 68)
         {
@@ -1367,7 +1364,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));              
         }        
     }
-    else if ((p = rt_strstr(_pcDate, cRemoteMode)) && (p != RT_NULL))
+    else if (((p = rt_strstr(_pcDate, cRemoteMode)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 8)
         {
@@ -1428,7 +1425,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));          
         }  
     }
-    else if ((p = rt_strstr(_pcDate, "+OK=")) && (p != RT_NULL) && g_MAC_flag == 1)
+    else if (((p = rt_strstr(_pcDate, "+OK=")) && (p != RT_NULL) && g_MAC_flag == 1) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         char cBuf[18] = {0x5a, 0xa5, 0x0f, 0x82, 0x17, 0x00, 0x00, 0x00, 0x00,
                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1442,7 +1439,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             &cBuf[14], &cBuf[15], &cBuf[16], &cBuf[17]); */
         rd_usart_sz_send(cBuf, sizeof(cBuf));
     }
-    else if((p = rt_strstr(_pcDate, cManufacture)) && (p != RT_NULL))
+    else if(((p = rt_strstr(_pcDate, cManufacture)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 28)
         {
@@ -1471,7 +1468,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));          
         }        
     }
-    else if ((p = rt_strstr(_pcDate, cManufactureRsp)) && (p != RT_NULL))
+    else if (((p = rt_strstr(_pcDate, cManufactureRsp)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 9)
         {
@@ -1486,7 +1483,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));          
         }
     }
-    else
+    else if (g_stDevicePara.m_iMode == CTRL_REMOTE)
     {
         sprintf(section, ">%d/ER_%02d\n", iDevAddr, 2);
         rd_usart_ed_send(section, rt_strlen(section));
