@@ -1276,6 +1276,8 @@ void sw_NetWorkProc(uint8 *_pcDate)
             p = rt_strstr(section, "\r");
             if(p == RT_NULL)
             {// No return in cmd. 
+                sprintf(section, ">%d/ER_%02d\n", iDevAddr, 3);
+                rd_usart_ed_send(section, rt_strlen(section));              
                 return;
             }
             *p = '\n';
@@ -1283,6 +1285,8 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));
             if((iInputChn[0] < 0) || (iInputChn[0] > 8) || (iOutputChn < 1) || (iOutputChn > 32))
             {//data value invalid. 
+                sprintf(section, ">%d/ER_%02d\n", iDevAddr, 3);
+                rd_usart_ed_send(section, rt_strlen(section));              
                 return;
             }
             cBuf[40] = (char)iOutputChn;
@@ -1321,6 +1325,8 @@ void sw_NetWorkProc(uint8 *_pcDate)
             p = rt_strstr(section, "\r");
             if(p == RT_NULL)
             {// No return in cmd. 
+                sprintf(section, ">%d/ER_%02d\n", iDevAddr, 3);
+                rd_usart_ed_send(section, rt_strlen(section));              
                 return;
             }
             *p = '\n';

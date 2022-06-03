@@ -13,6 +13,7 @@ cbk_SerialRecv cbk_Serialed_rev = sw_NetWorkProc; //串口接收回调
 #define RX_THREAD_NAME "SerialRx" //串口接收线程名称
 #define END_FLAG 0x0A //结尾数据为0x0D时为一包数据
 #define END_FLAG2 0x0D //结尾数据为0x0D时为一包数据
+#define TIMEOUT 100 //如果100毫秒内还没有新数据，以为一帧数据结束
 static struct rt_semaphore rxSem;
 static rt_device_t pSerial;
 static struct rt_messagequeue stmq;
@@ -44,7 +45,7 @@ static void serial_thread_recv(void *parameter)
         if (rt_mq_recv(&stmq, &cBuf, sizeof(cBuf), RT_WAITING_FOREVER) == RT_EOK)
         {
             //rt_device_write(pSerial, 0, cBuf, MSG_SIZE);
-            if (RT_NULL != cbk_Serialed_rev)
+            if ((RT_NULL != cbk_Serialed_rev) && (cBuf[0] != 10))
             {
                 cbk_Serialed_rev(cBuf);
             }          
@@ -60,24 +61,38 @@ static void serial_thread_entry(void *parameter)
     char ch;
     char cBuf[MSG_SIZE] = {0};
     int iCnt = 0;
+    rt_size_t recv_byte_no = 0;
+    static rt_uint16_t time_counter = 0;
     while (1)
     {
-        while (rt_device_read(pSerial, -1, &ch, 1) != 1)
+        recv_byte_no = rt_device_read(pSerial, -1, &ch, 1);
+        if(recv_byte_no == 1)
         {
-            rt_sem_take(&rxSem, RT_WAITING_FOREVER);
+            time_counter = 0;
+            cBuf[iCnt++] = ch;
+            //rt_kprintf("%c\r\n", ch);
+            if (ch == 0x61 &&(g_MAC_flag == 1 || g_NET_flag == 1))
+            {
+                //rt_kprintf("recv a\r\n");
+                rd_usart_ed_send("a", 1);
+            }
+            else if ((ch == END_FLAG) || (ch == END_FLAG2))//此处逻辑可按照实际结尾数据情况修改
+            {
+                rt_mq_send(&stmq, &cBuf, MSG_SIZE);
+                rt_memset(cBuf, 0, MSG_SIZE);
+                iCnt = 0;
+            }
         }
-        cBuf[iCnt++] = ch;
-        //rt_kprintf("%c\r\n", ch);
-        if (ch == 0x61 &&(g_MAC_flag == 1 || g_NET_flag == 1))
+        else if(iCnt > 0)
         {
-            //rt_kprintf("recv a\r\n");
-            rd_usart_ed_send("a", 1);
+            time_counter++;
         }
-        else if (ch == END_FLAG || ch == END_FLAG2)//此处逻辑可按照实际结尾数据情况修改
+        if(time_counter > TIMEOUT)
         {
             rt_mq_send(&stmq, &cBuf, MSG_SIZE);
             rt_memset(cBuf, 0, MSG_SIZE);
             iCnt = 0;
+            time_counter = 0;
         }
     }
 }
