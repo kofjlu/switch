@@ -1498,6 +1498,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
 void sw_Init(void)
 {
     int addr = 0;
+    uint16 ClkData[32] = {0};
     rt_thread_mdelay(1000);
     if (0 != Cfg_Init(CONFIG_NAME))//配置文件不存在
     {
@@ -1511,7 +1512,12 @@ void sw_Init(void)
         Cfg_Set32(g_CLKDate);
     }
     Cfg_Get32(g_CLKDate);
-    sw_Send322lcd(g_CLKDate);
+    for(uint8 i = 0; i < 16; i++)
+    {
+        ClkData[i] = g_CLKDate[15 - i];
+        ClkData[i + 16] = g_CLKDate[31 - i];
+    }
+    sw_Send322lcd(ClkData);
     Cfg_GetDevicepara(sw_get_DeviceParam());
     addr = sw_get_DeviceParam()->m_iDeviceAddr;
     if (addr/100)
