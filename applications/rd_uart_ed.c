@@ -45,7 +45,7 @@ static void serial_thread_recv(void *parameter)
         if (rt_mq_recv(&stmq, &cBuf, sizeof(cBuf), RT_WAITING_FOREVER) == RT_EOK)
         {
             //rt_device_write(pSerial, 0, cBuf, MSG_SIZE);
-            if ((RT_NULL != cbk_Serialed_rev) && (cBuf[0] != 10))
+            if (RT_NULL != cbk_Serialed_rev)
             {
                 cbk_Serialed_rev(cBuf);
             }          
