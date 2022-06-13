@@ -39,7 +39,8 @@
 #define GET_REMOTE_MODE_REQ "<%d/REM_?\r"
 #define GET_STATUS_REQ "<%d/STATUS_?\r"
 #define SET_MANUFACTURE_INFO "<%d/WHAT="
-#define GET_MANUFACTURE_INFO "<%d/WHAT_?"
+#define GET_MANUFACTURE_INFO "<%d/WHAT_?\r"
+#define GET_VERSION "<%d/VER_?\r"
 
 #define CTRL_MODEON_RSP ">%d/REM_ON\n" 
 #define CTRL_MODEOFF_RSP ">%d/REM_OFF\n" 
@@ -50,6 +51,7 @@
 #define OUTPUT_STATUS_OFF_RSP ">%d/STATUS_OFF,CH1_%02d,CH2_%02d,CH3_%02d,CH4_%02d,CH5_%02d,CH6_%02d,CH7_%02d,CH8_%02d,CH9_%02d,CH10_%02d,CH11_%02d,CH12_%02d,CH13_%02d,CH14_%02d,CH15_%02d,CH16_%02d,CH17_%02d,CH18_%02d,CH19_%02d,CH20_%02d,CH21_%02d,CH22_%02d,CH23_%02d,CH24_%02d,CH25_%02d,CH26_%02d,CH27_%02d,CH28_%02d,CH29_%02d,CH30_%02d,CH31_%02d,CH32_%02d\n"
 #define SET_MANUFACTURE_RSP ">%d/WHAT=%s\n"
 #define GET_MANUFACTURE_RSP ">%d/WHAT=%s\n"
+#define VERSION_RSP ">%d/VER=%d\n"
 
 typedef union { 
     uint16 usaddr;

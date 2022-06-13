@@ -7,6 +7,8 @@
 
 // #define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
 
+const uint16 firmware_version = 101;
+
 const uint16 MainButtonList[2][MAIN_BUTTON_MAX] = {{ONEBY1_BUTTON01, ONEBY1_BUTTON02, ONEBY1_BUTTON03, ONEBY1_BUTTON04, 
                                                     ONEBY1_BUTTON05, ONEBY1_BUTTON06, ONEBY1_BUTTON07, ONEBY1_BUTTON08,
                                                     ONEBY1_BUTTON09, ONEBY1_BUTTON10, ONEBY1_BUTTON11, ONEBY1_BUTTON12,
@@ -1220,6 +1222,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
     char cMformat[256] = {0};
     char cManufacture[32] = {0};
     char cManufactureRsp[32] = {0};
+    char cGetVersion[32] = {0};
     (void)sprintf(cModeonReq, CTRL_MODEON_REQ, iDevAddr);
     (void)sprintf(cModeoffReq, CTRL_MODEOFF_REQ, iDevAddr);
     (void)sprintf(cModeonRsp, CTRL_MODEON_RSP, iDevAddr);
@@ -1232,6 +1235,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
     (void)sprintf(cMformat, "<%d%s", iDevAddr, MLIU_CHN_FORMAT);
     (void)sprintf(cManufacture, SET_MANUFACTURE_INFO, iDevAddr);
     (void)sprintf(cManufactureRsp, GET_MANUFACTURE_INFO, iDevAddr);
+    (void)sprintf(cGetVersion, GET_VERSION, iDevAddr);
     
     // rt_kprintf("========\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", cModeonReq, cModeoffReq, cModeonRsp, cModeoffRsp, cSChnHead, cMChnHead, cRemoteMode, cStatus);
     //rt_kprintf("%s[%d]%s\r\n", __func__, __LINE__, _pcDate);
@@ -1245,6 +1249,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
         g_stDevicePara.m_iMode = CTRL_REMOTE;
         sw_McuSendMsg2Lcd(&stMcu2lcd);
         sw_UpdateDevicePara();
+        Cfg_SetDevicepara(&g_stDevicePara);
         rd_usart_ed_send(cModeonRsp, sizeof(cModeonRsp));
         sw_SetBeepblink();
     }
@@ -1258,6 +1263,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
         g_stDevicePara.m_iMode = CTRL_LOCAL;
         sw_McuSendMsg2Lcd(&stMcu2lcd);
         sw_UpdateDevicePara();
+        Cfg_SetDevicepara(&g_stDevicePara);
         rd_usart_ed_send(cModeoffRsp, sizeof(cModeoffRsp));
         sw_SetBeepblink();
     }
@@ -1468,7 +1474,7 @@ void sw_NetWorkProc(uint8 *_pcDate)
             rd_usart_ed_send(section, rt_strlen(section));          
         }        
     }
-    else if (((p = rt_strstr(_pcDate, cManufactureRsp)) && (p != RT_NULL)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
+    else if ((0 == rt_strcmp(_pcDate, cManufactureRsp)) && (g_stDevicePara.m_iMode == CTRL_REMOTE))
     {
         if (iDateLen == g_iAddrBitnum + 9)
         {
@@ -1482,6 +1488,12 @@ void sw_NetWorkProc(uint8 *_pcDate)
             sprintf(section, ">%d/ER_%02d\n", iDevAddr, 3);
             rd_usart_ed_send(section, rt_strlen(section));          
         }
+    }
+    else if(0 == rt_strcmp(_pcDate, cGetVersion))
+    {
+        sprintf(section, VERSION_RSP, iDevAddr, firmware_version);
+        rd_usart_ed_send(section, rt_strlen(section));
+        sw_SetBeepblink();
     }
     // else if (g_stDevicePara.m_iMode == CTRL_REMOTE)
     // {
