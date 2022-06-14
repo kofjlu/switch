@@ -7,7 +7,7 @@
 
 // #define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
 
-const uint16 firmware_version = 101;
+const uint16 firmware_version = 102;
 
 const uint16 MainButtonList[2][MAIN_BUTTON_MAX] = {{ONEBY1_BUTTON01, ONEBY1_BUTTON02, ONEBY1_BUTTON03, ONEBY1_BUTTON04, 
                                                     ONEBY1_BUTTON05, ONEBY1_BUTTON06, ONEBY1_BUTTON07, ONEBY1_BUTTON08,
@@ -1465,6 +1465,14 @@ void sw_NetWorkProc(uint8 *_pcDate)
             Cfg_SetDevicepara(&g_stDevicePara);
             rt_strcpy(section, _pcDate);
             section[0] = '>';
+            p = rt_strstr(section, "\r");
+            if(p == RT_NULL)
+            {// No return in cmd. 
+                sprintf(section, ">%d/ER_%02d\n", iDevAddr, 3);
+                rd_usart_ed_send(section, rt_strlen(section));              
+                return;
+            }
+            *p = '\n';
             rd_usart_ed_send(section, rt_strlen(section));
             sw_SetBeepblink();
         }
