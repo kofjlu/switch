@@ -5,7 +5,7 @@
 #include <dfs_posix.h>
 #include "config.h"
 
-// #define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
+#define FOUR_VERSION //此宏控制是否为第四套，注释掉宏表示前三套，否则为第四套
 
 const uint16 firmware_version = 102;
 
@@ -513,6 +513,10 @@ static void sw_Send322lcd(uint16 *_pcsw16)
         stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.Icon = sw_Cfg2In(_pcsw16[i]) - 0x100;
         rt_kprintf("[%d]", stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.Icon);
         stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.head = 0;
+#ifdef FOUR_VERSION
+        rt_thread_mdelay(1000);
+        Lcd2Uart(stmcu2lcdEx[i].m_stMcu2Lcd.stAddr.usaddr, stmcu2lcdEx[i].m_stMcu2Lcd.stDateEx.stIcon.Icon);
+#endif
         sw_McuSendMsg2Lcd(&(stmcu2lcdEx[i].m_stMcu2Lcd));
     }
 }
